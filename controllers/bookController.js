@@ -175,4 +175,32 @@ const updateBook = async (req, res) => {
     }
 };
 
-module.exports = { addBook, updateBook, deleteBook, getBooks };
+const shareBookActivity = async (req, res) => {
+    try {
+        const { bookId } = req.body;
+        const userId = req.user.id;
+
+        // Save the shared activity to the database
+        const sharedActivity = await SharedActivity.create({
+            type: 'book',
+            bookId,
+            userId,
+            timestamp: new Date()
+            // Add additional fields as needed
+        });
+
+        res.status(200).json({
+            success: true,
+            message: "Book activity shared successfully",
+            sharedActivity,
+        });
+    } catch (error) {
+        console.error("Error in sharing book activity:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Error in sharing book activity",
+        });
+    }
+};
+
+module.exports = { addBook, updateBook, deleteBook, getBooks,shareBookActivity };

@@ -9,12 +9,14 @@ const PORT = process.env.PORT || 5000;
 const userRoutes = require("./routes/authRoutes.js");
 const bookRoutes = require("./routes/bookRoutes.js");
 const movieRoutes = require("./routes/movieRoute.js");
+const activityRoutes = require("./routes/activityRoutes.js");
 
 app.use(cookieParser());
 app.use(express.json());
 app.use("/api/v1", userRoutes);
 app.use("/api/v1", bookRoutes);
 app.use("/api/v1", movieRoutes);
+app.use("/api/v1", activityRoutes);
 
 app.listen(PORT, () => {
     console.log(`Connected to PORT ${PORT}`);
