@@ -54,11 +54,16 @@ const getBooks = async (req, res) => {
         }
         
         const books = user.bookList;
+
+        const completedBooks = await Book.find({ user: userId, status: 'completed' });
+        const planningBooks = await Book.find({ user: userId, status: 'planning' });
         
         res.status(200).json({
             success: true,
             message: "Books retrieved successfully",
             books,
+            completedBooks,
+            planningBooks
         });
     } catch (error) {
         console.error("Error in retrieving books:", error);
@@ -129,6 +134,45 @@ const deleteBook = async (req, res) => {
     }
 };
 
-module.exports = deleteBook;
+const updateBook = async (req, res) => {
+    try {
+        const bookId = req.params.bookId;
+        const { title, author, genre, status, rating, review } = req.body;
 
-module.exports = { addBook, getBooks, deleteBook};
+        // Check if the required fields are provided
+        if (!title || !author || !genre) {
+            return res.status(400).json({
+                success: false,
+                message: "Please fill all the required fields.",
+            });
+        }
+
+        // Find the book by ID and update its details
+        const updatedBook = await Book.findByIdAndUpdate(
+            bookId,
+            { title, author, genre, status, rating, review },
+            { new: true }
+        );
+
+        if (!updatedBook) {
+            return res.status(404).json({
+                success: false,
+                message: "Book not found.",
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: "Book updated successfully",
+            book: updatedBook,
+        });
+    } catch (error) {
+        console.error("Error in updating book:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Error in updating book",
+        });
+    }
+};
+
+module.exports = { addBook, updateBook, deleteBook, getBooks };
