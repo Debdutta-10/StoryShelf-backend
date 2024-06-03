@@ -74,6 +74,33 @@ const getBooks = async (req, res) => {
     }
 };
 
+const getBookbyId = async (req, res) => {
+    try {
+        const {bookId} = req.params;
+        const book = await Book.findById(bookId);
+        
+        if (!book) {
+            return res.status(404).json({
+                success: false,
+                message: "Book not found.",
+            });
+        }
+        
+        res.status(200).json({
+            success: true,
+            message: "Book retrieved successfully",
+            book,
+        });
+
+    } catch (error) {
+        console.error("Error in retrieving the book:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Error in retrieving books",
+        });
+    }
+};
+
 const deleteBook = async (req, res) => {
     try {
         const userId = req.user.id;
@@ -175,32 +202,4 @@ const updateBook = async (req, res) => {
     }
 };
 
-const shareBookActivity = async (req, res) => {
-    try {
-        const { bookId } = req.body;
-        const userId = req.user.id;
-
-        // Save the shared activity to the database
-        const sharedActivity = await SharedActivity.create({
-            type: 'book',
-            bookId,
-            userId,
-            timestamp: new Date()
-            // Add additional fields as needed
-        });
-
-        res.status(200).json({
-            success: true,
-            message: "Book activity shared successfully",
-            sharedActivity,
-        });
-    } catch (error) {
-        console.error("Error in sharing book activity:", error);
-        return res.status(500).json({
-            success: false,
-            message: "Error in sharing book activity",
-        });
-    }
-};
-
-module.exports = { addBook, updateBook, deleteBook, getBooks,shareBookActivity };
+module.exports = { addBook, updateBook, deleteBook, getBooks,getBookbyId };

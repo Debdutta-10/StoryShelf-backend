@@ -132,6 +132,33 @@ const deleteMovie = async (req, res) => {
     }
 };
 
+const getMoviebyId = async (req, res) => {
+    try {
+        const {movieId} = req.params;
+        const movie = await Movie.findById(movieId);
+        
+        if (!movie) {
+            return res.status(404).json({
+                success: false,
+                message: "Movie not found.",
+            });
+        }
+        
+        res.status(200).json({
+            success: true,
+            message: "Movie retrieved successfully",
+            movie,
+        });
+
+    } catch (error) {
+        console.error("Error in retrieving the Movie:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Error in retrieving Movie",
+        });
+    }
+};
+
 const updateMovie = async (req, res) => {
     try {
         const movieId = req.params.movieId;
@@ -173,4 +200,4 @@ const updateMovie = async (req, res) => {
     }
 };
 
-module.exports = { addMovie, updateMovie, deleteMovie, getMovies };
+module.exports = { addMovie, updateMovie, deleteMovie, getMovies, getMoviebyId};
