@@ -17,6 +17,14 @@ const shareBook = async (req, res) => {
             });
         }
 
+        const existingActivity = await SharedActivity.findOne({ type: 'book', activityId: bookId, userId:userId});
+        if (existingActivity) {
+            return res.status(400).json({
+                success: false,
+                message: "Book already shared by the user.",
+            });
+        }
+
         const sharedActivity = await SharedActivity.create({
             type: 'book',
             activityId: bookId,
@@ -62,6 +70,7 @@ const shareMovie = async (req, res) => {
         const userId = req.user.id;
 
         // Save the shared movie activity to the database
+        
         const sharedActivity = await SharedActivity.create({
             type: 'movie',
             activityId: movieId,

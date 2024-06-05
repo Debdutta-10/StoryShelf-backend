@@ -1,12 +1,13 @@
 const mongoose = require("mongoose");
 const User = require("../models/User.js");
 const Movie = require("../models/Movie.js");
+const SharedActivity = require("../models/Activity.js");
 
 const addMovie = async (req, res) => {
     try {
         const userId = req.user.id; // Retrieve the user ID from req.user
         const { title, director, genre, releaseDate, status, rating, review } = req.body;
-        
+
         // Check if required fields are provided
         if (!title || !director || !genre) {
             return res.status(400).json({
@@ -14,7 +15,16 @@ const addMovie = async (req, res) => {
                 message: "Please fill all the required fields.",
             });
         }
-        
+
+        // Check if a movie with the same title and director already exists for this user
+        const existingMovie = await Movie.findOne({ user: userId, title, director });
+        if (existingMovie) {
+            return res.status(400).json({
+                success: false,
+                message: "A movie with the same title and director already exists for this user.",
+            });
+        }
+
         // Create a new movie
         const movie = await Movie.create({ title, director, genre, releaseDate, status, rating, review, user: userId });
 
@@ -41,23 +51,24 @@ const addMovie = async (req, res) => {
     }
 };
 
+
 const getMovies = async (req, res) => {
     try {
         const userId = req.user.id;
         const user = await User.findById(userId).populate('movieList').exec();
-        
+
         if (!user) {
             return res.status(404).json({
                 success: false,
                 message: "User not found.",
             });
         }
-        
+
         const movies = user.movieList;
 
         const completedMovies = await Movie.find({ user: userId, status: 'completed' });
         const planningMovies = await Movie.find({ user: userId, status: 'planning' });
-        
+
         res.status(200).json({
             success: true,
             message: "Movies retrieved successfully",
@@ -77,7 +88,7 @@ const getMovies = async (req, res) => {
 const deleteMovie = async (req, res) => {
     try {
         const userId = req.user.id;
-        const {movieId} = req.params;
+        const { movieId } = req.params;
 
         if (!movieId || !userId) {
             return res.status(400).json({
@@ -118,6 +129,9 @@ const deleteMovie = async (req, res) => {
             });
         }
 
+        // Remove shared activities related to the deleted movie
+        await SharedActivity.deleteMany({ type: 'movie', activityId: movieId });
+
         res.status(200).json({
             success: true,
             message: "Movie deleted successfully",
@@ -134,16 +148,16 @@ const deleteMovie = async (req, res) => {
 
 const getMoviebyId = async (req, res) => {
     try {
-        const {movieId} = req.params;
+        const { movieId } = req.params;
         const movie = await Movie.findById(movieId);
-        
+
         if (!movie) {
             return res.status(404).json({
                 success: false,
                 message: "Movie not found.",
             });
         }
-        
+
         res.status(200).json({
             success: true,
             message: "Movie retrieved successfully",
@@ -200,4 +214,4 @@ const updateMovie = async (req, res) => {
     }
 };
 
-module.exports = { addMovie, updateMovie, deleteMovie, getMovies, getMoviebyId};
+module.exports = { addMovie, updateMovie, deleteMovie, getMovies, getMoviebyId };
